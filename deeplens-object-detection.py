@@ -164,7 +164,7 @@ def infinite_infer_run():
 
                     try:
                         # if a person was found, upload the target area to S3 for further inspection
-                        if output_map[obj["label"]] == "person":
+                        if output_map[obj["label"]] == "person" and obj["prob"] > 0.9:
                             # get the person image
                             person = frame[ymin:ymax, xmin:xmax]
                             # create a s3 file key

@@ -138,22 +138,23 @@ def infinite_infer_run():
                     ymax = int(yscale * obj["ymax"])
 
                     try:
-                        # get the person image
-                        person = frame[ymin:ymax, xmin:xmax]
-                        # create a s3 file key
-                        filename = (
-                            datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S.%f")
-                            + ".jpg"
-                        )
-                        _, jpg_data = cv2.imencode(".jpg", person)
-                        key = "incoming/{}".format(filename)
-                        res = s3.put_object(
-                            ACL="public-read",
-                            Body=jpg_data.tostring(),
-                            Bucket=bucket_name,
-                            Key=key,
-                        )
-                        print(res.json())
+                        if obj["prob"] > 0.9:
+                            # get the person image
+                            person = frame[ymin:ymax, xmin:xmax]
+                            # create a s3 file key
+                            filename = (
+                                datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S.%f")
+                                + ".jpg"
+                            )
+                            _, jpg_data = cv2.imencode(".jpg", person)
+                            key = "incoming/{}".format(filename)
+                            res = s3.put_object(
+                                ACL="public-read",
+                                Body=jpg_data.tostring(),
+                                Bucket=bucket_name,
+                                Key=key,
+                            )
+                            print(res.json())
                     except Exception as ex:
                         print("Error", ex)
                         client.publish(
