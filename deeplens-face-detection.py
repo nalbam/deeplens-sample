@@ -140,14 +140,12 @@ def infinite_infer_run():
                     try:
                         # get the person image
                         person = frame[ymin:ymax, xmin:xmax]
-
                         # create a s3 file key
                         filename = (
                             datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S.%f")
                             + ".jpg"
                         )
                         _, jpg_data = cv2.imencode(".jpg", person)
-
                         key = "incoming/{}".format(filename)
                         res = s3.put_object(
                             ACL="public-read",
@@ -158,6 +156,10 @@ def infinite_infer_run():
                         print(res.json())
                     except Exception as ex:
                         print("Error", ex)
+                        client.publish(
+                            topic=iot_topic,
+                            payload="Error in s3 put lambda: {}".format(ex),
+                        )
 
                     # See https://docs.opencv.org/3.4.1/d6/d6e/group__imgproc__draw.html
                     # for more information about the cv2.rectangle method.
@@ -185,6 +187,7 @@ def infinite_infer_run():
             # Send results to the cloud
             client.publish(topic=iot_topic, payload=json.dumps(cloud_output))
     except Exception as ex:
+        print("Error", ex)
         client.publish(
             topic=iot_topic, payload="Error in face detection lambda: {}".format(ex)
         )
