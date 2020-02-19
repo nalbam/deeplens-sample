@@ -12,13 +12,6 @@ import numpy as np
 import awscam
 import cv2
 import greengrasssdk
-import datetime
-from botocore.session import Session
-
-# Setup the S3 client
-session = Session()
-s3 = session.create_client("s3")
-bucket_name = os.environ.get("BUCKET_NAME", "deeplens-doorman-demo")
 
 
 class LocalDisplay(Thread):
@@ -136,32 +129,6 @@ def infinite_infer_run():
                     ymin = int(yscale * obj["ymin"])
                     xmax = int(xscale * obj["xmax"])
                     ymax = int(yscale * obj["ymax"])
-
-                    try:
-                        if obj["prob"] > 0.9:
-                            # get the person image
-                            person = frame[ymin:ymax, xmin:xmax]
-                            # create a s3 file key
-                            filename = (
-                                datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S.%f")
-                                + ".jpg"
-                            )
-                            _, jpg_data = cv2.imencode(".jpg", person)
-                            key = "incoming/{}".format(filename)
-                            res = s3.put_object(
-                                ACL="public-read",
-                                Body=jpg_data.tostring(),
-                                Bucket=bucket_name,
-                                Key=key,
-                            )
-                            print(res.json())
-                    except Exception as ex:
-                        print("Error", ex)
-                        client.publish(
-                            topic=iot_topic,
-                            payload="Error in s3 put lambda: {}".format(ex),
-                        )
-
                     # See https://docs.opencv.org/3.4.1/d6/d6e/group__imgproc__draw.html
                     # for more information about the cv2.rectangle method.
                     # Method signature: image, point1, point2, color, and tickness.
