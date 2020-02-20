@@ -19,3 +19,11 @@ ssh aws_cam@$DL_IP_ADDR cat /opt/awscam/out/ch1_out.h264 |
 ssh aws_cam@$DL_IP_ADDR cat /tmp/\*results.mjpeg |
   mplayer –demuxer lavf -cache 8092 -lavfdopts format=mjpeg:probesize=32 -
 ```
+
+### CloudWatch Insight
+
+```sql
+fields @message
+| filter @message =~ 'Greengrass Message'
+| sort @timestamp desc
+```
